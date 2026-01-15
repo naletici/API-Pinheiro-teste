@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
+import psycopg2
 from db import get_db_connection, get_db_cursor
 from models import Cliente, ClienteCreate, ClienteUpdate
 from typing import List
@@ -85,11 +86,23 @@ async def update_cliente(id_cliente: int, cliente: ClienteUpdate, current_user: 
         values.append(id_cliente)
         query = f"UPDATE cliente SET {', '.join(updates)} WHERE id_cliente = %s"
         cursor.execute(query, values)
+        
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Cliente não encontrado")
+
         conn.commit()
         return {"message": "Cliente atualizado com sucesso"}
+    except HTTPException:
+        raise
+    except psycopg2.Error as e:
+        conn.rollback()
+        # 23505 is Unique Violation in Postgres
+        if e.pgcode == '23505':
+            raise HTTPException(status_code=400, detail="CPF já cadastrado.")
+        raise HTTPException(status_code=400, detail=f"Erro de banco de dados: {e}")
     except Exception as e:
         conn.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=f"Erro inesperado: {str(e)}")
     finally:
         cursor.close()
         conn.close()

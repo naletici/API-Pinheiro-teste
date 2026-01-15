@@ -273,12 +273,15 @@ class ItemCompraUpdate(BaseModel):
 # Estoque
 class Estoque(BaseModel):
     id_estoque: int
+    id_produto: int
     quant_present: Optional[int] = None
     
 class EstoqueCreate(BaseModel):
+    id_produto: int
     quant_present: Optional[int] = None
 
 class EstoqueUpdate(BaseModel):
+    id_produto: Optional[int] = None
     quant_present: Optional[int] = None
 
 # Movimenta

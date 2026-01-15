@@ -41,7 +41,7 @@ async def get_estoques(current_user: dict = Depends(require_auth)):
 @router.get("/estoques/{id_estoque}", response_model=dict)
 async def get_estoque(id_estoque: int, current_user: dict = Depends(require_auth)):
     conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = get_db_cursor(conn)
     try:
         cursor.execute("SELECT * FROM estoque WHERE id_estoque = %s", (id_estoque,))
         row = cursor.fetchone()
@@ -57,7 +57,7 @@ async def get_estoque(id_estoque: int, current_user: dict = Depends(require_auth
 @router.put("/estoques/{id_estoque}", response_model=dict)
 async def update_estoque(id_estoque: int, estoque: EstoqueUpdate, current_user: dict = Depends(require_auth)):
     conn = get_db_connection()
-    cursor = conn.cursor()
+    cursor = get_db_cursor(conn)
     try:
         updates = []
         values = []
